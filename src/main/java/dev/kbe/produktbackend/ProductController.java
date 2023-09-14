@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.kbe.produktbackend.config.RabbitMQConfig;
+import dev.kbe.produktbackend.config.RabbitMQSender;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*")
@@ -28,6 +29,9 @@ public class ProductController {
 
     @Autowired
     private AmqpTemplate amqpTemplate;
+
+    @Autowired
+    RabbitMQSender rabbitMQSender;
 
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {
@@ -49,10 +53,15 @@ public class ProductController {
 
     @PostMapping("/queue")
     public ResponseEntity<String> createProductQueue(@RequestBody Product product) {
-        amqpTemplate.convertAndSend(RabbitMQConfig.QUEUE_NAME, product);
+        amqpTemplate.convertAndSend(RabbitMQConfig.queue, product);
         return ResponseEntity.ok("Product sent to queue: " + product.getName());
     }
 
+    @GetMapping("/shoppingcart")
+    public String sendProduct(Product product) {
+        rabbitMQSender.send(product);
+        return "Product sent to queue: " + product.getName();
+    }
 }
 
 // TODO updateProduct, deleteProduct, addProducttoCart(RabbitMQ? an
