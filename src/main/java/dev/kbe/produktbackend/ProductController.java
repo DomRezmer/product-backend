@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.bson.types.ObjectId;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +17,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import dev.kbe.produktbackend.config.RabbitMQConfig;
+
 @RestController
 @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*")
 @RequestMapping("/api/account")
 public class ProductController {
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private AmqpTemplate amqpTemplate;
 
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {
@@ -41,6 +47,13 @@ public class ProductController {
         return new ResponseEntity<Product>(productService.createProduct(name, description, price), HttpStatus.CREATED);
     }
 
-    // TODO updateProduct, deleteProduct, addProducttoCart(RabbitMQ? an
-    // CartBackend???)
+    @PostMapping("/queue")
+    public ResponseEntity<String> createProductQueue(@RequestBody Product product) {
+        amqpTemplate.convertAndSend(RabbitMQConfig.QUEUE_NAME, product);
+        return ResponseEntity.ok("Product sent to queue: " + product.getName());
+    }
+
 }
+
+// TODO updateProduct, deleteProduct, addProducttoCart(RabbitMQ? an
+// CartBackend???)

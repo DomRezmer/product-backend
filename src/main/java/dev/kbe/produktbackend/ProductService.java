@@ -42,4 +42,9 @@ public class ProductService {
 
         return product;
     }
+
+    public void createProductQueue(String name, String description, double price) {
+        Product product = new Product(name, description, price);
+        // productRepository.insert(product);
+    }
 }
