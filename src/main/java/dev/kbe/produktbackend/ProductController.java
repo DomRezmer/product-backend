@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.kbe.produktbackend.config.RabbitMQConfig;
@@ -22,7 +23,7 @@ import dev.kbe.produktbackend.config.RabbitMQSender;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*")
-@RequestMapping("/api/account")
+@RequestMapping("/api/product")
 public class ProductController {
     @Autowired
     private ProductService productService;
@@ -53,12 +54,18 @@ public class ProductController {
 
     @PostMapping("/queue")
     public ResponseEntity<String> createProductQueue(@RequestBody Product product) {
-        amqpTemplate.convertAndSend(RabbitMQConfig.queue, product);
+        RabbitMQConfig rabbitMQConfig = new RabbitMQConfig();
+        amqpTemplate.convertAndSend(rabbitMQConfig.getQueue(), product);
         return ResponseEntity.ok("Product sent to queue: " + product.getName());
     }
 
     @GetMapping("/shoppingcart")
-    public String sendProduct(Product product) {
+    public String sendProduct(@RequestParam("productName") String productName,
+            @RequestParam("productDescription") String productDescription, @RequestParam("price") double price /*
+                                                                                                                * Product
+                                                                                                                * product
+                                                                                                                */) {
+        Product product = new Product(productName, productDescription, price);
         rabbitMQSender.send(product);
         return "Product sent to queue: " + product.getName();
     }
