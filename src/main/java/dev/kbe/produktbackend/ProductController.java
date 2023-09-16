@@ -23,7 +23,7 @@ import dev.kbe.produktbackend.config.RabbitMQSender;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*")
-@RequestMapping("/api/product")
+@RequestMapping("/api/products")
 public class ProductController {
     @Autowired
     private ProductService productService;
